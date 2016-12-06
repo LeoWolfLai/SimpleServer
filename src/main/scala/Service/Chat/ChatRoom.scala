@@ -21,20 +21,23 @@ class ChatRoom(roomId: Int, actorSystem: ActorSystem) {
 			case TextMessage.Strict(txt) => IncomingMessage(user, txt)
 		}
 
-		val source = Source.actorRef(10, OverflowStrategy.fail).via(sendBackToUser)
-			.mapMaterializedValue(UserJoined(user, _))
-
 		val sink = Sink.actorRef[ChatEvents](chatRoomActor, UserLeft(user))
 
-		Flow.fromGraph(GraphDSL.create() { implicit builder =>
+		Flow.fromGraph(GraphDSL.create(Source.actorRef[ChatMessage](10, OverflowStrategy.fail)) { implicit builder =>
+			userActor =>
+				val merge = builder.add(Merge[ChatEvents](2))
+				val source = builder.materializedValue.map(UserJoined(user, _))
+				val in = builder.add(textFromUser)
+				val out = builder.add(sendBackToUser)
 
-			val out = builder.add(source)
+				in ~> merge.in(0)
+				source ~> merge.in(1)
 
-			val in = builder.add(textFromUser)
+				merge ~> sink
 
-			in ~> sink
+				userActor ~> out
 
-			FlowShape(in.in, out.out)
+				FlowShape(in.in, out.out)
 		})
 	}
 
