@@ -16,7 +16,7 @@ In the SimpleServer, api is only defined as UserApi, so the "UserApi" is needed.
 
 If you want to use the rest service with file, connect to http://127.0.0.1:7777/user/upload, and post a file with key-value pairs as following:  
 
-[![json file format]](https://drive.google.com/file/d/0BzGD6LaOgqVjczJFbWNrWDZhZTg/view?usp=sharing)
+![json file format](https://github.com/LeoWolfLai/SimpleServer/blob/master/json%20file%20format.png)
 
 The Server will simply return the file name back to you.
 
